@@ -1,0 +1,16 @@
+# PyTorch is NOT listed here - install it first from the CUDA index (see README):
+#   pip install torch --index-url https://download.pytorch.org/whl/cu126
+
+transformers>=5.0
+datasets>=4.0
+accelerate>=1.0
+peft>=0.20
+tokenizers>=0.22
+safetensors>=0.4
+evaluate>=0.4
+tqdm>=4.66
+numpy>=1.26
+matplotlib>=3.8
+
+# Optional interactive demo
+gradio>=4.44
