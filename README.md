@@ -1,6 +1,6 @@
-# Next Word Predictor — Fine-tuning GPT-2 on WikiText-2
+# Next Word Predictor - Fine-tuning GPT-2 on WikiText-2
 
-A transformer language model fine-tuned to predict the next word in a sequence — the task
+A transformer language model fine-tuned to predict the next word in a sequence, the task
 behind autocomplete, writing assistants, and chat suggestions. Three GPT-2 variants
 (`gpt2`, `gpt2-medium`, `gpt2-large`) are fine-tuned on WikiText-2 and evaluated with
 **perplexity** and **top-k accuracy**.
