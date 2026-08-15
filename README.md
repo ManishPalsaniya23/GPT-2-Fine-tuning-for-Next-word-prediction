@@ -5,7 +5,7 @@ behind autocomplete, writing assistants, and chat suggestions. Three GPT-2 varia
 (`gpt2`, `gpt2-medium`, `gpt2-large`) are fine-tuned on WikiText-2 and evaluated with
 **perplexity** and **top-k accuracy**.
 
-Everything here was trained on a single **4 GB laptop GPU** (NVIDIA RTX 3050). That
+Everything here is trained on a single NVIDIA RTX 3050 GPU. That
 constraint shaped the design: models too large to fully fine-tune are trained with **LoRA
 adapters** instead, selected automatically based on detected VRAM.
 
@@ -83,24 +83,6 @@ curves, and the cross-model comparison. Regenerate with `python -m src.plots`.
   k highest-probability predictions. Top-1 is exact-match; top-5 and top-10 reflect how an
   autocomplete UI actually behaves, offering several suggestions at once.
 
-### Caveats
-
-State these if you write this up — they are the things a careful reader will ask about.
-
-- **Not comparable to the GPT-2 paper's perplexities.** Evaluation here uses
-  non-overlapping 256-token blocks; published figures use a 1024-token sliding window with
-  different detokenization. Compare within these tables, not across papers.
-- **The cross-model comparison is not fully controlled.** gpt2 ran 3 epochs as a full
-  fine-tune; medium and large ran 2 epochs with LoRA. The baseline-relative gains are
-  clean, but the model-size ranking confounds size with training mode and epoch count.
-- **One run per model, no seed variance**, so no error bars — small differences should not
-  be over-interpreted.
-- **Early stopping never triggered.** Validation loss improved through the final evaluation
-  in every run, so no overfitting was observed within 2–3 epochs. The mechanism is wired up
-  and functional, but these runs never exercised it.
-
----
-
 ## Preprocessing
 
 Implemented in [`src/data.py`](src/data.py). Four steps:
@@ -120,7 +102,7 @@ both compute and gradient signal. Instead, all documents are concatenated into a
 token stream and re-sliced into uniform **256-token blocks**:
 
 ```
-documents  →  [tok tok tok tok ... one continuous stream ...]  →  [256][256][256]...
+documents  ->  [tok tok tok tok ... one continuous stream ...]  ->  [256][256][256]...
 ```
 
 Every position now carries real signal and every batch has identical shape. The trailing
@@ -167,8 +149,7 @@ git clone https://github.com/<your-username>/<repo-name>.git
 cd next-word-predictor
 
 python -m venv venv
-.\venv\Scripts\Activate.ps1          # Windows
-# source venv/bin/activate           # Linux / macOS
+.\venv\Scripts\Activate.ps1
 
 pip install torch --index-url https://download.pytorch.org/whl/cu126
 pip install -r requirements.txt
@@ -184,7 +165,7 @@ python main.py
 ```
 
 This prints your device, VRAM, and — for each model — whether it will be fully fine-tuned
-or trained with LoRA on your hardware.
+or trained with LoRA on hardware
 
 > **Note on `transformers` v5.** This project targets **transformers 5.x**, which renamed
 > several Trainer arguments: `warmup_ratio` → `warmup_steps`, `evaluation_strategy` →
@@ -253,8 +234,7 @@ python -m src.evaluate --model-dir outputs/gpt2-wikitext-2-raw-v1-full/best_mode
 what makes the improvement figures above meaningful. Results print to the console and are
 written to `eval_test.json` inside the model directory.
 
-**Match the batch size to the model** — evaluation loads the merged model in fp32, so on a
-4 GB card:
+**Match the batch size to the model** — evaluation loads the merged model in fp32:
 
 | Model | `--batch-size` |
 |---|---|
@@ -272,14 +252,12 @@ python -m src.report      # comparison table across all finished runs
 python -m src.plots       # regenerates results/plots/*.png
 ```
 
-### Trying it interactively
+### Interactively
 
 ```powershell
 python -m src.predict --model-dir outputs/gpt2-large-wikitext-2-raw-v1-lora/best_model `
                       --interactive --generate
 ```
-
-Prints ranked next-word candidates with probabilities, plus an optional continuation.
 
 ---
 
@@ -292,22 +270,14 @@ probabilities, and generate a continuation.
 python app.py --model-dir outputs/gpt2-large-wikitext-2-raw-v1-lora/best_model
 ```
 
-Then open **http://127.0.0.1:7860** in a browser.
+Then open **http://127.0.0.1:7860** in a browser
 
-| Option | Effect |
-|---|---|
-| `--model-dir` | Which trained model to load (**required**) |
-| `--port 7860` | Change the port |
-| `--share` | Create a public shareable link |
 
 Controls in the UI:
 
 - **Candidates to show** — how many next-word predictions to rank (1–20)
 - **Continuation length** — tokens to generate (10–200)
 - **Temperature** — lower is more conservative, higher more varied
-
-The first load of a LoRA model takes ~30 seconds, because the base weights are downloaded
-and the adapter is merged into them. Subsequent launches are fast.
 
 ---
 
@@ -328,8 +298,7 @@ python -m src.report
 python -m src.plots
 ```
 
-Total training time on an RTX 3050 (4 GB) is about 2.5 hours for all three models. Runs are
-seeded (`--seed 42`), though exact floating-point reproducibility is not guaranteed across
+Runs are seeded (`--seed 42`), though exact floating-point reproducibility is not guaranteed across
 different GPUs.
 
 ---
